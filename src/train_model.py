@@ -1,10 +1,9 @@
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+import joblib
+import os
 
-
-def prepare_data(df):
+def train_and_save_model(df):
 
     X = df.drop("Class", axis=1)
     y = df["Class"]
@@ -17,37 +16,19 @@ def prepare_data(df):
         stratify=y
     )
 
-    print("\nTrain Shape :", X_train.shape)
-    print("Test Shape :", X_test.shape)
+    print("Training Random Forest Model...")
 
-    return X_train, X_test, y_train, y_test
+    model = RandomForestClassifier(
+        n_estimators=100,
+        random_state=42
+    )
 
+    model.fit(X_train, y_train)
 
-def train_models(X_train, y_train):
+    os.makedirs("models", exist_ok=True)
 
-    models = {
+    joblib.dump(model, "models/fraud_detection_model.pkl")
 
-        "Logistic Regression": LogisticRegression(max_iter=1000),
+    print("✅ Model Saved Successfully!")
 
-        "Decision Tree": DecisionTreeClassifier(random_state=42),
-
-        "Random Forest": RandomForestClassifier(
-            n_estimators=100,
-            random_state=42
-        )
-
-    }
-
-    trained_models = {}
-
-    print("\nTraining Models...\n")
-
-    for name, model in models.items():
-
-        model.fit(X_train, y_train)
-
-        trained_models[name] = model
-
-        print(f"{name} Trained Successfully")
-
-    return trained_models
+    return model
